@@ -1,16 +1,16 @@
 "use client"
-import { SignUpModal } from "@/app/components/sign-in";
+import { SignInModal, SignUpModal } from "@/app/components/sign-in";
 import { cards, featuredPosts, latestPosts } from "@/app/lib/data";
 import { useState } from "react";
 
 export default function BlogPage() {
-  const [open,setIsOpen] = useState(false)
-
+  const [open, setIsOpen] = useState(false)
+  const [activeModel, setActiveModal] = useState<"signup" | "signin">("signup")
   return (
     <main className="min-h-screen bg-[#f3f3f3] px-2 py-2 text-[#171717] md:px-4 ">
       <div
 
-      className="mx-auto max-w-screen rounded-[28px] border border-black/5 bg-white shadow-[0_10px_40px_rgba(0,0,0,0.04)]">
+        className="mx-auto max-w-screen rounded-[28px] border border-black/5 bg-white h-full shadow-[0_10px_40px_rgba(0,0,0,0.04)]">
         <header className="flex flex-col gap-4 border-b border-black/8 px-5 py-4 md:flex-row md:items-center md:justify-between md:px-8">
           <div className="flex items-center gap-10">
             <div className="flex items-center gap-2 text-2xl font-extrabold tracking-tight">
@@ -39,11 +39,17 @@ export default function BlogPage() {
 
           <div className="flex items-center gap-3">
             <button
-            onClick={()=>{setIsOpen(true)}}
-            className="rounded-xl bg-[#f3f5fb] px-5 py-2.5 text-sm font-semibold text-[#2f6bff] transition hover:bg-[#e9eefc]">
+              onClick={() => { setIsOpen(true)
+                setActiveModal("signin")
+              }}
+              className="rounded-xl cursor-pointer bg-[#f3f5fb] px-5 py-2.5 text-sm font-semibold text-[#2f6bff] transition hover:bg-[#e9eefc]">
               Sign in
             </button>
-            <button className="rounded-xl bg-[#2f6bff] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90">
+            <button
+              onClick={() => { setIsOpen(true)
+                setActiveModal("signup")
+              }}
+              className="rounded-xl cursor-pointer bg-[#2f6bff] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90">
               Register
             </button>
           </div>
@@ -137,8 +143,10 @@ export default function BlogPage() {
           </div>
         </section>
       </div>
-      <div className="relative py-20">
-        <SignUpModal open={open}/>
+      <div className="">
+        {activeModel == "signup" ?
+          <SignUpModal open={open} onClose={() => setIsOpen(false)} activeModal={setActiveModal}/>
+          : <SignInModal open={open} onClose={() => setIsOpen(false)} activeModal={setActiveModal} />}
       </div>
     </main>
   );

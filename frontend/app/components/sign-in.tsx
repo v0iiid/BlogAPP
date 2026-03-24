@@ -1,8 +1,41 @@
-import { Dispatch, SetStateAction } from "react";
+"use client"
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import axios from "axios"
+import { useRouter } from "next/navigation";
 
-export function SignUpModal({ open = true, onClose,activeModal }: { open?: boolean; onClose?: () => void ,activeModal:Dispatch<SetStateAction<"signup" | "signin">>}) {
+export function SignUpModal({ open = true, onClose, activeModal }: { open?: boolean; onClose?: () => void, activeModal: Dispatch<SetStateAction<"signup" | "signin">> }) {
   if (!open) return null;
 
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [form, setForm] = useState<{
+    username: string;
+    password: string;
+    email: string;
+  }>({
+    username: "",
+    password: "",
+    email: "",
+  });
+
+  const createAccount = async () => {
+    try {
+
+      setLoading(true);
+
+      const res = await axios.post("http://localhost:8000/api/v1/auth/register", {
+        ...form,
+      });
+
+      const data = res.data;
+      console.log(data);
+      router.push("/blog")
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center  px-4 py-4 sm:items-center">
       <div
@@ -37,7 +70,12 @@ export function SignUpModal({ open = true, onClose,activeModal }: { open?: boole
             Sign up with email
           </h2>
 
-          <form className="mt-4 w-full text-left">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              createAccount()
+            }}
+            className="mt-4 w-full text-left">
             <div>
               <label className="mb-3 block text-[18px] font-medium text-black" htmlFor="fullName">
                 Your full name
@@ -45,6 +83,12 @@ export function SignUpModal({ open = true, onClose,activeModal }: { open?: boole
               <input
                 id="fullName"
                 type="text"
+                onChange={(e) => {
+                  setForm((prev) => ({
+                    ...prev,
+                    username: e.target.value
+                  }))
+                }}
                 placeholder="Enter your full name"
                 className="h-14 w-full rounded-[4px] border border-black/60 px-4 text-[16px] text-black outline-none transition placeholder:text-black/45 focus:border-black"
               />
@@ -57,6 +101,12 @@ export function SignUpModal({ open = true, onClose,activeModal }: { open?: boole
               <input
                 id="email"
                 type="email"
+                onChange={(e) => {
+                  setForm((prev) => ({
+                    ...prev,
+                    email: e.target.value
+                  }))
+                }}
                 placeholder="Enter your email address"
                 className="h-14 w-full rounded-[4px] border border-black/60 px-4 text-[16px] text-black outline-none transition placeholder:text-black/45 focus:border-black"
               />
@@ -66,6 +116,12 @@ export function SignUpModal({ open = true, onClose,activeModal }: { open?: boole
                 Password
               </label>
               <input
+                onChange={(e) => {
+                  setForm((prev) => ({
+                    ...prev,
+                    password: e.target.value
+                  }))
+                }}
                 id="password"
                 type="text"
                 placeholder="Enter your password"
@@ -78,14 +134,17 @@ export function SignUpModal({ open = true, onClose,activeModal }: { open?: boole
             </label> */}
 
             <div className="mt-8 flex justify-center">
-              <button className="rounded-xl bg-[#2f6bff] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90">
-                Create Account
+              <button
+                type="submit"
+
+                className="rounded-xl bg-[#2f6bff] px-5 cursor-pointer py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90">
+                {loading ? "Loading..." : " Create Account"}
               </button>
             </div>
 
             <p className="mt-8 text-center text-[18px] text-black">
               Already have an account?{' '}
-              <a href="#" onClick={()=>activeModal("signin")} className="underline underline-offset-2">
+              <a href="#" onClick={() => activeModal("signin")} className="underline underline-offset-2">
                 Sign in
               </a>
             </p>
@@ -98,9 +157,33 @@ export function SignUpModal({ open = true, onClose,activeModal }: { open?: boole
   );
 }
 
-export function SignInModal({ open = true, onClose,activeModal }: { open?: boolean; onClose?: () => void,activeModal:Dispatch<SetStateAction<"signup" | "signin">>}) {
+export function SignInModal({ open = true, onClose, activeModal }: { open?: boolean; onClose?: () => void, activeModal: Dispatch<SetStateAction<"signup" | "signin">> }) {
   if (!open) return null;
+  const router = useRouter();
+  const [loading, setLoading] = useState(false)
+  const [form, setForm] = useState<{
 
+    password: string;
+    email: string;
+  }>({
+
+    password: "",
+    email: "",
+  });
+
+  const login = async () => {
+    try {
+      setLoading(true)
+      await axios.post("http://localhost:8000/api/v1/auth/login", {
+        ...form
+      })
+      setLoading(false)
+      router.push("/blog")
+    } catch (error) {
+      console.log("Error at login ", error)
+      setLoading(false)
+    }
+  }
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center  px-4 py-4 sm:items-center">
       <div onClick={onClose} className="absolute w-screen h-screen bg-black/30 z-20 "></div>
@@ -134,7 +217,12 @@ export function SignInModal({ open = true, onClose,activeModal }: { open?: boole
             Sign up with email
           </h2>
 
-          <form className="mt-4 w-full text-left">
+          <form
+          onSubmit={(e)=>{
+            e.preventDefault()
+            login()
+          }}
+          className="mt-4 w-full text-left">
 
             <div className="mt-6">
               <label className="mb-3 block text-[18px] font-medium text-black" htmlFor="email">
@@ -142,6 +230,12 @@ export function SignInModal({ open = true, onClose,activeModal }: { open?: boole
               </label>
               <input
                 id="email"
+                onChange={(e) => {
+                  setForm((prev) => ({
+                    ...prev,
+                    email: e.target.value
+                  }))
+                }}
                 type="email"
                 placeholder="Enter your email address"
                 className="h-14 w-full rounded-[4px] border border-black/60 px-4 text-[16px] text-black outline-none transition placeholder:text-black/45 focus:border-black"
@@ -153,6 +247,12 @@ export function SignInModal({ open = true, onClose,activeModal }: { open?: boole
               </label>
               <input
                 id="password"
+                onChange={(e) => {
+                  setForm((prev) => ({
+                    ...prev,
+                    password: e.target.value
+                  }))
+                }}
                 type="text"
                 placeholder="Enter your password"
                 className="h-14 w-full rounded-[4px] border border-black/60 px-4 text-[16px] text-black outline-none transition placeholder:text-black/45 focus:border-black"
@@ -164,14 +264,16 @@ export function SignInModal({ open = true, onClose,activeModal }: { open?: boole
             </label> */}
 
             <div className="mt-12 flex justify-center">
-              <button className="rounded-xl bg-[#2f6bff] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90">
-               Continue
+              <button
+              type="submit"
+              className="rounded-xl cursor-pointer bg-[#2f6bff] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90">
+                {loading?"Loading...":"Continue"}
               </button>
             </div>
 
             <p className="mt-8 text-center text-[18px] text-black">
-             Create a new account?{' '}
-              <a href="#" onClick={()=>{activeModal("signup")}} className="underline underline-offset-2">
+              Create a new account?{' '}
+              <a href="#" onClick={() => { activeModal("signup") }} className="underline underline-offset-2">
                 Sign up
               </a>
             </p>

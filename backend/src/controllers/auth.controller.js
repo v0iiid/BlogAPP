@@ -1,28 +1,137 @@
 
+import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
+import cookieParser from 'cookie-parser';
+import {prisma} from "../lib/prisma.js"
+
 
 export const register = async (req, res) => {
-  try {
-    res.send("Register route working");
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Register error" });
-  }
+
+
+   const {email, password, username}  = req.body
+   try {
+    if (!email || !password || !username) {
+        return res.status(400).json({ error: "All fields are required" })
+    }
+        const existingUser = await prisma.user.findUnique({
+            where :{
+                email
+            }
+        })
+        if(existingUser){
+            return res.status(400).json({
+                error: "User already exists"
+            })
+        }
+        const hashedPassword = await bcrypt.hash(String(password),10)
+
+        const newUser = await prisma.user.create({
+            data : {
+                email ,
+                password: hashedPassword ,
+                name :username
+            }
+        })
+
+        const token = jwt.sign({
+            id : newUser.id
+        },process.env.JWT_SECRET,{expiresIn: '7d'})
+
+
+        res.cookie("jwt" , token , {
+            httpOnly : true ,
+            sameSite : "lax" ,
+             secure:process.env.NODE_ENV !== "development",
+            maxAge:1000 * 60 * 60 * 24 * 7
+        })
+
+
+        res.status(200).json({
+            message:"User created Successfully",
+            user:{
+                id:newUser.id,
+                email:newUser.email,
+                name:newUser.username
+            }
+        })
+   } catch (error) {
+     console.error("Error in register controller", error);
+        res.status(500).json({
+            error:"Internal Server Error"
+        })
+   }
 };
 
 export const login = async (req, res) => {
-  try {
-    res.send("Login route working");
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Login error" });
-  }
+    const {email,password} = req.body
+    try {
+        const user = await prisma.user.findUnique({
+            where:{
+                email
+            }
+        })
+
+        if(!user){
+            return res.status(400).json({
+                message :"Invalid Credentials"
+            })
+        }
+
+        const isPasswordValid = await bcrypt.compare(password ,user.password )
+        if(!isPasswordValid){
+            return res.status(400).json({
+                message:"Invalid password"
+            })
+        }
+
+        const token = jwt.sign({
+            id :user.id
+        },process.env.JWT_SECRET,{expiresIn:"7d"})
+
+
+        res.cookie("jwt", token , {
+            httpOnly:true,
+            sameSite: "lax",
+            secure:process.env.NODE_ENV !== "development",
+            maxAge:1000 * 60 * 60 * 24 * 7
+        })
+
+        res.status(200).json({
+            success:true ,
+            message:"Login Successfull",
+            user : {
+                id :user.id ,
+                email: user.email ,
+                name : user.username
+
+            }
+        })
+    } catch (error) {
+        console.log("Error in login Controller", error);
+        return res.status(400).json({
+            success:false,
+            message: "Error logging in user "
+        })
+    }
 };
 
 export const logout = async (req, res) => {
-  try {
-    res.send("Logout route working");
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Logout error" });
-  }
-};
+
+   try {
+     res.clearCookie("jwt" , {
+           httpOnly:true,
+             sameSite: "lax",
+             secure:process.env.NODE_ENV !== "development",
+         })
+         return res.status(200).json({
+            success:true ,
+            message:"Logout Successfully"
+         })
+   } catch (error) {
+        console.log("Error in Logout Controller" , error)
+        return res.status(400).json({
+            success:ture ,
+            message:"Error logging out user"
+        })
+   }
+}

@@ -89,6 +89,8 @@ export const login = async (req, res) => {
         },process.env.JWT_SECRET,{expiresIn:"7d"})
 
 
+
+
         res.cookie("jwt", token , {
             httpOnly:true,
             sameSite: "lax",

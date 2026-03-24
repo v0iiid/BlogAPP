@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRoute from "./routes/authRoutes.js";
+import blogRoute from "./routes/blogRoutes.js";
 import { prisma } from "./lib/prisma.js";
 
 dotenv.config();
@@ -38,6 +39,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/v1/auth", authRoute);
+app.use("/api/v1/blogs", blogRoute);
 
 const PORT = process.env.PORT || 8080;
 

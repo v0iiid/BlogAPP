@@ -12,6 +12,6 @@ blogRoute.get('/:id', getBlogById);
 
 blogRoute.put('/:id', authMiddleware, updateBlog);
 
-blogRoute.delete('/:id', deleteBlog);
+blogRoute.delete('/:id', authMiddleware,deleteBlog);
 
 export default blogRoute;

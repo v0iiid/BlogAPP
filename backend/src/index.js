@@ -6,6 +6,7 @@ import authRoute from "./routes/authRoutes.js";
 import blogRoute from "./routes/blogRoutes.js";
 import commentRouter from "./routes/commentRoutes.js";
 import likeRouter from "./routes/likeRoutes.js";
+import followRouter from "./routes/followRoutes.js";
 import { prisma } from "./lib/prisma.js";
 
 dotenv.config();
@@ -44,6 +45,7 @@ app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/blogs", blogRoute);
 app.use("/api/v1/comments", commentRouter);
 app.use("/api/v1/likes", likeRouter);
+app.use("/api/v1/follow", followRouter);
 
 const PORT = process.env.PORT || 8080;
 

@@ -21,6 +21,8 @@ model User {
   post Post[]
   comments Comment[]
   likes Like[]
+    followers Follow[] @relation("Follower")
+    following Follow[] @relation("Following")
 }
 
 model Post{
@@ -61,3 +63,17 @@ model Like{
     user     User     @relation(fields: [userid], references: [id],onDelete: Cascade)
     @@unique([postid, userid])
 }
+
+
+model Follow{
+    id        Int      @id @default(autoincrement())
+    followerid Int
+    followingid Int
+    createdAt DateTime @default(now())
+    follower  User     @relation("Follower", fields: [followerid], references: [id],onDelete: Cascade)
+    following User     @relation("Following", fields: [followingid], references: [id],onDelete: Cascade)
+    @@unique([followerid, followingid])
+}
+
+
+

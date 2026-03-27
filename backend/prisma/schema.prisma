@@ -23,6 +23,8 @@ model User {
   likes Like[]
     followers Follow[] @relation("Follower")
     following Follow[] @relation("Following")
+    sentNotifications Notification[] @relation("NotificationSender")
+    receivedNotifications Notification[]
 }
 
 model Post{
@@ -34,6 +36,7 @@ model Post{
     user     User     @relation(fields: [userid], references: [id],onDelete: Cascade)
     postComments Comment[]
     postLikes Like[]
+    postNotifications Notification[]
 
     @@unique([userid, title])
 }
@@ -51,6 +54,7 @@ model Comment{
     user     User     @relation(fields: [userid], references: [id],onDelete: Cascade)
     parent   Comment? @relation("CommentReplies", fields: [parentid], references: [id])
     replies   Comment[] @relation("CommentReplies")
+    commentNotifications Notification[]
 
 }
 
@@ -77,3 +81,17 @@ model Follow{
 
 
 
+model Notification{
+    id       Int @id @default(autoincrement())
+    postid Int?
+    commentid Int?
+    recieverid Int
+    senderid Int
+    type  String // "like", "comment", "follow"
+    isRead Boolean @default(false)
+    createdAt DateTime @default(now())
+    reciever User @relation(fields: [recieverid], references: [id],onDelete: Cascade)
+    sender User @relation("NotificationSender", fields: [senderid], references: [id],onDelete: Cascade)
+    post Post? @relation(fields: [postid], references: [id],onDelete: Cascade)
+    comment Comment? @relation(fields: [commentid], references: [id],onDelete: Cascade)
+}

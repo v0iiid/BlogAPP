@@ -1,5 +1,6 @@
 
 import {prisma} from "../lib/prisma.js"
+import { createNotification } from "../services/notificationService.js";
 
 
 export const likePost = async (req, res) => {
@@ -38,11 +39,17 @@ export const likePost = async (req, res) => {
                  postid: parseInt(postid),
              }
          })
+         await createNotification({
+            type: "like",
+            senderid: userId,
+            recieverid: post.userid, // post owner
+            postid: post.id,
+        });
 
-         res.status(201).json({
-             success:true,
-             data: newLike,
-         })
+        return res.status(201).json({
+            success: true,
+            data: newLike,
+        });
 
        } catch (error) {
         console.error("likePost failed ",error);

@@ -1,4 +1,6 @@
 import {prisma} from "../lib/prisma.js";
+import { createNotification } from "../services/notificationService.js";
+
 export const followUser = async(req,res)=>{
     try {
         const {userid} = req.params;
@@ -42,16 +44,21 @@ export const followUser = async(req,res)=>{
                 followingid: parseInt(userid),
             }
         })
+   await createNotification({
+      type: "follow",
+      senderid: currentUserId,
+      recieverid: parseInt(userid),
+    });
 
-        res.status(201).json({
-            success:true,
-            data: newFollow,
-        })
+    res.status(201).json({
+      success: true,
+      data: newFollow,
+    });
     } catch (error) {
         console.error("Follow user failed" ,error)
         return res.status(500).json({
             success:false ,
-            mesage:"Internal Server Error"
+            message:"Internal Server Error"
         })
     }
 }

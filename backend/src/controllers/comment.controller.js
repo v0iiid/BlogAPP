@@ -1,4 +1,5 @@
 import { prisma } from "../lib/prisma.js";
+import { createNotification } from "../services/notificationService.js";
 
 export const createComment = async (req, res) => {
     try {
@@ -27,6 +28,15 @@ export const createComment = async (req, res) => {
                 userid: req.user.id,
             },
         });
+
+    await createNotification({
+      type: "comment",
+      senderid: req.user.id,
+      recieverid: post.userid, // post owner
+      postid: post.id,
+      commentid: newComment.id,
+    });
+
 
         res.status(201).json({
             success: true,

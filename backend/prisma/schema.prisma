@@ -18,4 +18,80 @@ model User {
   name      String
    password String
   createdAt DateTime @default(now())
+  post Post[]
+  comments Comment[]
+  likes Like[]
+    followers Follow[] @relation("Follower")
+    following Follow[] @relation("Following")
+    sentNotifications Notification[] @relation("NotificationSender")
+    receivedNotifications Notification[]
+}
+
+model Post{
+    id        Int      @id @default(autoincrement())
+    title     String
+    content   String
+    userid    Int
+    createdAt DateTime @default(now())
+    user     User     @relation(fields: [userid], references: [id],onDelete: Cascade)
+    postComments Comment[]
+    postLikes Like[]
+    postNotifications Notification[]
+
+    @@unique([userid, title])
+}
+
+
+model Comment{
+    id        Int      @id @default(autoincrement())
+    content   String
+    postid    Int
+    userid    Int
+    parentid  Int?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    post     Post     @relation(fields: [postid], references: [id],onDelete: Cascade)
+    user     User     @relation(fields: [userid], references: [id],onDelete: Cascade)
+    parent   Comment? @relation("CommentReplies", fields: [parentid], references: [id])
+    replies   Comment[] @relation("CommentReplies")
+    commentNotifications Notification[]
+
+}
+
+model Like{
+    id        Int      @id @default(autoincrement())
+    postid    Int
+    userid    Int
+    createdAt DateTime @default(now())
+    post     Post     @relation(fields: [postid], references: [id],onDelete: Cascade)
+    user     User     @relation(fields: [userid], references: [id],onDelete: Cascade)
+    @@unique([postid, userid])
+}
+
+
+model Follow{
+    id        Int      @id @default(autoincrement())
+    followerid Int
+    followingid Int
+    createdAt DateTime @default(now())
+    follower  User     @relation("Follower", fields: [followerid], references: [id],onDelete: Cascade)
+    following User     @relation("Following", fields: [followingid], references: [id],onDelete: Cascade)
+    @@unique([followerid, followingid])
+}
+
+
+
+model Notification{
+    id       Int @id @default(autoincrement())
+    postid Int?
+    commentid Int?
+    recieverid Int
+    senderid Int
+    type  String // "like", "comment", "follow"
+    isRead Boolean @default(false)
+    createdAt DateTime @default(now())
+    reciever User @relation(fields: [recieverid], references: [id],onDelete: Cascade)
+    sender User @relation("NotificationSender", fields: [senderid], references: [id],onDelete: Cascade)
+    post Post? @relation(fields: [postid], references: [id],onDelete: Cascade)
+    comment Comment? @relation(fields: [commentid], references: [id],onDelete: Cascade)
 }
